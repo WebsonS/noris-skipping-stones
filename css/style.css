@@ -439,5 +439,12 @@ body:not(.touch) .throw-btn { width: 110px; height: 110px; }
 .vs-cam.big { width: min(60vw, 520px); }
 .vs-cam span { position: absolute; left: 0; right: 0; bottom: 0; padding: 4px 8px; font-size: .78em; font-weight: 700; color: #fff; background: rgba(30,40,60,.6); text-align: center; }
 .vs-cam span[hidden], #vsActions[hidden], #vsRoom[hidden] { display: none; }
-.vs-chip.hurry { color: #c0392b; animation: perfectShine .6s ease-in-out infinite alternate; }
+.vs-chip.hurry { color: #b3261e; animation: vsHurry .5s ease-in-out infinite alternate; }
+@keyframes vsHurry { to { background: #ffd9d2; } }
+/* in a match the score chip takes the Best chip's spot, so the results card never covers it */
+.vs-chip { top: calc(12px + var(--safe-t)); z-index: 40; max-width: calc(100vw - 130px); overflow: hidden; text-overflow: ellipsis; }
+#hud:has(#vsChip:not([hidden])) #bestChip { visibility: hidden; }
+.res-buttons .icon-only { flex: none; padding-left: 13px; padding-right: 13px; }
+.res-buttons .icon-only svg { width: 22px; height: 22px; display: block; }
+.res-buttons .primary { white-space: nowrap; }
 #btnVsGo[hidden], #btnVsLink[hidden] { display: none; }
