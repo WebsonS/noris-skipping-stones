@@ -160,6 +160,7 @@
     return reels;
   }
 
+  let pendingUnlocks = []; // stones found while the player had already moved on
   async function showResult(res, info, opts) {
     const t = tier(res);
     tally = { done: false, res, info };
@@ -240,11 +241,16 @@
       root.FX.burst(card.right - 40, card.top + card.height * 0.6, 30, { colors: ['#f6a7c0', '#ffd34d', '#fff6dc'] });
     }
     tally.done = true;
-    if (info.unlocked.length) {
+    const found = pendingUnlocks.concat(info.unlocked);
+    if (found.length) {
       await wait(700);
-      // mid-match: never pop the reveal (Space would equip it); just say it's waiting in the pouch
-      if ((root.Versus && root.Versus.inMatch())) toast(`New stone found: ${info.unlocked.map((r) => r.name).join(', ')}! It's in your pouch for later.`, 3200);
-      else await showUnlock(info.unlocked);
+      const onResults = isOpen('result'), inMatch = root.Versus && root.Versus.inMatch();
+      // The reveal only ever opens on the results screen, never over live play (or mid-match, where Space
+      // would equip it). Otherwise it waits for the next results screen.
+      if (!onResults || inMatch) {
+        pendingUnlocks = found;
+        if (inMatch && onResults && info.unlocked.length) toast(`New stone found: ${info.unlocked.map((r) => r.name).join(', ')}! You'll see it after the match.`, 3200);
+      } else { pendingUnlocks = []; await showUnlock(found); }
     }
     emit('result:done');
   }

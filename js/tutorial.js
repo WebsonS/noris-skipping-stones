@@ -4,7 +4,7 @@
   'use strict';
   const $ = (id) => document.getElementById(id);
   let G = root.Game; const UI = root.UI, Save = root.Save;
-  const touch = document.body.classList.contains('touch');
+  const isTouch = () => document.body.classList.contains('touch'); // read at use time: main.js sets the class after this file loads
   const SFX = () => root.Sound.sfx;
   const TOTAL = 6; // progress pips shown in the bubble
 
@@ -83,23 +83,23 @@
       G.tut.forceSweet = true;
       if (G.angle > 13 && G.angle < 25) G.angle = 10;
       spot('angleDial', { pointer: 'updown', pad: 8 });
-      say(touch
+      say(isTouch()
         ? 'First, the <b>angle</b>. Slide your thumb <b>up and down</b> on the left side of the screen to tilt the stone into the <span class="em">green zone</span>.'
         : 'First, the <b>angle</b>. <b>Scroll your mouse wheel</b> (or press <b>↑ ↓</b>, or drag this dial) to tilt the stone into the <span class="em">green zone</span>.',
       { cat: 'sit', pos: 'mid', pip: 0 });
       holdT = 0;
     },
     power() {
-      Object.assign(G.tut, { lockThrow: false, minPower: 0.62, assist: 0.8, freezeAtSkip: 2, maxSkips: 4 });
-      spot(touch ? 'throwBtn' : 'throwBtn', { pointer: 'hold', pad: 10, round: true });
-      say(touch
+      Object.assign(G.tut, { lockThrow: false, minPower: 0.62, assist: 0.8, freezeAtSkip: 1, maxSkips: 4 });
+      spot(isTouch() ? 'throwBtn' : 'throwBtn', { pointer: 'hold', pad: 10, round: true });
+      say(isTouch()
         ? 'Now <b>press and hold</b> the paw to wind up… and <b>let go</b> when the ring is nearly full!'
         : 'Now <b>hold the mouse button</b> (anywhere) or <b>Space</b> to wind up… and <b>let go</b> when the ring is nearly full!',
       { cat: 'pounce', pos: 'mid', pip: 1 });
     },
     flight() {
       spot(null);
-      say('Wheee! Watch it skip… every skip is worth <b>more</b> than the last!', { cat: 'alert', pos: 'low', pip: 2, instant: true });
+      say('Wheee! Watch it skip… every skip is worth <b>more</b> than the last!', { cat: 'alert', pos: 'mid', pip: 2, instant: true });
     },
     tapTeach() {
       const ringRect = () => {
@@ -109,13 +109,14 @@
         return { left: p.x - w / 2, top: p.y - w * 0.3, width: w, height: w * 0.6 };
       };
       spot(ringRect, { pointer: 'tap', pad: 16, round: true });
-      say(touch ? 'Quick — <b>tap</b> right as the stone touches the water for a bonus!' : 'Quick — <b>click</b> (or press <b>Space</b>) right as the stone touches the water for a bonus!',
-        { cat: 'shock', pos: 'low', pip: 2, instant: true });
+      say(isTouch() ? 'Slow-mo! <b>Tap</b> the moment the stone <b>touches the water</b>, when the ring closes. Good taps keep it skipping!'
+        : 'Slow-mo! <b>Click</b> (or press <b>Space</b>) the moment the stone <b>touches the water</b>, when the ring closes. Good taps keep it skipping!',
+        { cat: 'shock', pos: 'mid', pip: 2, instant: true });
     },
     tapped() {
       spot(null);
       celebrate('Purr-fect timing!');
-      say('Purr-fect! Watch for the <b>shrinking ring</b> — tap as it closes to keep the stone going.', { cat: 'flower', pos: 'low', pip: 3, instant: true });
+      say('Purr-fect! Watch for the <b>shrinking ring</b> — tap as it closes to keep the stone going.', { cat: 'flower', pos: 'mid', pip: 3, instant: true });
     },
     score() {
       spot('.res-total', { pad: 8 });
@@ -132,8 +133,8 @@
       say('Tilt the stone <b>completely flat</b> — all the way down, below 5° — then throw it.', { cat: 'peekeyes', pos: 'mid', pip: 4 });
     },
     flatReady() {
-      spot(touch ? 'throwBtn' : null, { pointer: touch ? 'hold' : null, round: true });
-      say(touch ? 'Flat as a pancake! Now <b>hold and release</b> the paw.' : 'Flat as a pancake! Now <b>hold and release</b> to throw.', { cat: 'peekeyes', pos: 'mid', pip: 4, instant: true });
+      spot(isTouch() ? 'throwBtn' : null, { pointer: isTouch() ? 'hold' : null, round: true });
+      say(isTouch() ? 'Flat as a pancake! Now <b>hold and release</b> the paw.' : 'Flat as a pancake! Now <b>hold and release</b> to throw.', { cat: 'peekeyes', pos: 'mid', pip: 4, instant: true });
     },
     plop() {
       spot(null);

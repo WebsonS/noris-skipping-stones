@@ -124,7 +124,7 @@
     const seed = (Math.random() * 1e9) | 0;
     const s = P.createThrow(G.angle, power, r, seed, { assist: G.tut.assist, maxSkips: G.tut.maxSkips });
     G.throw = s;
-    G.flightT = 0; G.sinkT = 0; G.trail = []; G.pendingTap = 0; G.tapCool = 0; G.lastMilestone = 0;
+    G.flightT = 0; G.sinkT = 0; G.trail = []; G.pendingTap = 0; G.tapCool = 0; G.lastMilestone = 0; G.tutTeach = false;
     G.side = 0; G.sideT = 0; G.lift = 0; G.camVelZ = 0; G.freeze = false;
     G.state = 'throw'; G.cat.t = 0;
     setCatMode('throw');
@@ -150,7 +150,7 @@
     const win = 0.1 * p.tapWindow, perfect = 0.05 * p.tapWindow;
     if (tc != null && tc < win) {
       G.pendingTap = tc < perfect || G.freeze ? 2 : 1;
-      if (G.freeze) { G.freeze = false; G.emit('tutTapped'); }
+      if (G.tutTeach) { G.freeze = false; G.tutTeach = false; G.emit('tutTapped'); }
     } else {
       G.tapCool = 0.3;
       UI.tapFeedback('Too early!');
@@ -337,8 +337,11 @@
       if (pc.t < show) G.approach = { x: pc.x, z: pc.z, k: pc.t / show, hot: pc.t < 0.1 * s.p.tapWindow };
       else G.approach = null;
       if (s.skips >= 3 && pc.t < 0.14) target *= 0.65;
-      if (G.tut.freezeAtSkip && s.skips + 1 === G.tut.freezeAtSkip && pc.t < 0.05 && !G.pendingTap && !G.freeze) {
-        G.freeze = true; G.emit('tutFreeze');
+      // tutorial: slow-mo as the stone nears the water + the "tap now" prompt, then hold it frozen until they tap
+      if (G.tut.freezeAtSkip && s.skips + 1 === G.tut.freezeAtSkip && !G.pendingTap && pc.t < 0.4) {
+        target *= 0.2;
+        if (!G.tutTeach) { G.tutTeach = true; G.emit('tutFreeze'); }
+        if (pc.t < 0.05) G.freeze = true;
       }
     } else G.approach = null;
     if (G.freeze) target = 0.0;
