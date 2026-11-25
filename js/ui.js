@@ -161,6 +161,11 @@
   }
 
   let pendingUnlocks = []; // stones found while the player had already moved on
+  function deferUnlocks(list) { // found mid-match: reveal on the first results screen after it
+    if (!list.length) return;
+    pendingUnlocks = pendingUnlocks.concat(list);
+    toast(`New stone found: ${list.map((r) => r.name).join(', ')}! You'll see it after the match.`, 3000);
+  }
   async function showResult(res, info, opts) {
     const t = tier(res);
     tally = { done: false, res, info };
@@ -383,7 +388,7 @@
   }
 
   root.UI = {
-    init, on, emit, show, hide, isOpen, toast, updateHud, setAngle, setPower, setHint, setFlying, setSkips, setScore,
+    init, on, emit, show, hide, isOpen, toast, deferUnlocks, updateHud, setAngle, setPower, setHint, setFlying, setSkips, setScore,
     banner, releaseLabel, tapFeedback, noriCam, showResult, hideResult, fastForward, showUnlock, openRocks, closeRocks, renderRocks,
     selectRock, openSettings, fmt, get tallyDone() { return !tally || tally.done; },
   };

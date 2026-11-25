@@ -30,6 +30,7 @@
     $('vsSetup').hidden = p !== 'off';
     $('vsRoom').hidden = p !== 'wait';
     $('vsActions').hidden = !(p === 'lobby' || p === 'done');
+    $('vsBoard').hidden = p !== 'done';
     $('btnVsClose').textContent = p === 'off' ? 'Close' : 'Leave room';
   }
   function reset() {
@@ -128,7 +129,7 @@
   function maybeCount() {
     if (phase !== 'lobby' || !me.ready || !them.ready) return;
     phase = 'count';
-    me.score = me.n = them.score = them.n = 0;
+    me.score = me.n = them.score = them.n = 0; me.throws = []; them.throws = [];
     UI.hide('versus');
     toLake();
     update();
@@ -154,9 +155,10 @@
 
   // ---------- the match ----------
   function record(total) {
-    me.n++; me.score += total;
+    me.n++; me.score += total; me.throws.push(total);
+    if (me.n === N) $('vsCamBox').classList.add('big'); // done: watch the friend's remaining throws
     deadline = Date.now() + TURN * 1000;
-    send({ t: 'score', score: me.score, n: me.n });
+    send({ t: 'score', score: me.score, n: me.n, throws: me.throws });
     if (me.n === N && them.n < N) UI.toast(`All throws done! Waiting for ${them.name}…`, 2600);
     update();
     check();
@@ -199,12 +201,22 @@
     if (left) { conn = null; $('vsCamBox').hidden = true; } // they're gone: no rematch, no second notice
     const win = left || me.score > them.score, tie = !left && me.score === them.score;
     $('vsTitle').textContent = win ? 'You win! 🏆' : tie ? "It's a tie!" : `${them.name} wins!`;
-    say(left ? `${them.name} left the match, so you win.` : `${me.name} ${me.score}  –  ${them.score} ${them.name}`);
+    say(left ? `${them.name} left the match, so you win.` : '');
+    board(win && !tie);
     $('btnVsGo').hidden = left; $('btnVsGo').firstChild.textContent = 'Rematch';
     show('done');
     UI.show('versus');
     $('vsChip').hidden = true;
     if (win) root.Sound.sfx.meow('happy'); else if (!tie) root.Sound.sfx.meow('sad');
+  }
+  function board(iWon) { // final scoreboard: every throw for both players, then the totals (names are pre-cleaned, numbers only)
+    const cell = (v) => (v == null ? '–' : v.toLocaleString());
+    const rows = Array.from({ length: N }, (_, i) => `<tr><td>Throw ${i + 1}</td><td>${cell(me.throws[i])}</td><td>${cell(them.throws[i])}</td></tr>`).join('');
+    const tie = me.score === them.score;
+    $('vsBoard').className = 'vs-board ' + (tie ? '' : iWon ? 'win-me' : 'win-them');
+    $('vsBoard').innerHTML = `<thead><tr><th></th><th>${me.name}</th><th>${them.name}</th></tr></thead><tbody>${rows}</tbody>`
+      + `<tfoot><tr><td>Total</td><td>${me.score.toLocaleString()}</td><td>${them.score.toLocaleString()}</td></tr></tfoot>`;
+    $('vsBoard').hidden = false;
   }
   function friendGone() {
     if (phase === 'play' || phase === 'count') return finish('left');
@@ -227,11 +239,11 @@
     lastSeen = Date.now();
     if (d.t === 'hi') { them.name = clean(d.name); if (phase === 'lobby') $('vsTitle').textContent = `${me.name} vs ${them.name}`; update(); }
     else if (d.t === 'ready') { them.ready = true; if (phase === 'lobby' && !me.ready) say(`${them.name} is ready!`); maybeCount(); }
-    else if (d.t === 'score' && (phase === 'play' || phase === 'count')) { them.score = num(d.score, 1e6); them.n = num(d.n, N); update(); check(); }
+    else if (d.t === 'score' && (phase === 'play' || phase === 'count')) { them.score = num(d.score, 1e6); them.n = num(d.n, N); if (Array.isArray(d.throws)) them.throws = d.throws.slice(0, N).map((v) => num(v, 1e6)); update(); check(); }
     else if (d.t === 'quit') friendGone();
     else if (d.t === 'vis') camTag(d.hidden ? `${them.name}'s game is in the background` : '');
     else if (d.t === 'fly') {
-      $('vsCamBox').classList.toggle('big', !!d.on);
+      $('vsCamBox').classList.toggle('big', !!d.on || me.n >= N);
       camTag(d.on ? `${them.name}: ${num(d.skips, 99)} skips` : '');
     }
   }

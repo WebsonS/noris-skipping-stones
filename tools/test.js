@@ -67,12 +67,12 @@ check('good-but-not-perfect power stays below 7', avg(nearly, (r) => r.skips) < 
 {
   Save.resetAll();
   check('fresh save: only the pebble, tutorial not done', Save.data.unlocked.join() === 'pebble' && !Save.data.tutorialDone);
-  const r3 = P.simulate(19, 0.6, pebble, 3);
-  const info = Save.recordThrow(r3, 19, 0.6);
-  check('4+ skips unlocks Googly', r3.skips >= 4 && info.unlocked.some((x) => x.id === 'googly'), `skips=${r3.skips}`);
+  const r3 = P.simulate(19, 0.7, pebble, 1);
+  const info = Save.recordThrow(r3, 19, 0.7);
+  check('6+ skips unlocks Googly', r3.skips >= 6 && info.unlocked.some((x) => x.id === 'googly'), `skips=${r3.skips}`);
   const r8 = P.simulate(19, 1, pebble, 3, { tapFn: () => 2 });
   const info8 = Save.recordThrow(r8, 19, 1);
-  check('a 10+ skip throw unlocks the skip-tier stones together', ['glass', 'sprout', 'frost'].every((id) => info8.unlocked.some((x) => x.id === id)), info8.unlocked.map((x) => x.id).join(','));
+  check('a 12+ skip throw unlocks the skip-tier stones together', ['glass', 'sprout', 'frost'].every((id) => info8.unlocked.some((x) => x.id === id)), info8.unlocked.map((x) => x.id).join(','));
   check('locked legendary stays locked', !Save.data.unlocked.includes('angel'));
   Save.set('tutorialDone', true);
   // simulate reopening the game: reload storage module from the same localStorage

@@ -601,6 +601,15 @@
   function showResult() {
     G.state = 'result';
     UI.updateHud();
+    if (root.Versus && root.Versus.inMatch()) {
+      // friend match: no results card covering the friend's live view; a quick score pop, then straight back to aiming
+      const r = G.result;
+      UI.banner(r.skips ? '+' + r.total : 'Plop!', r.total >= 1000 ? 'pink' : 'warm');
+      UI.deferUnlocks(G.resultInfo.unlocked);
+      G.emit('result', r);
+      setTimeout(() => { if (G.state === 'result') enterAim(); }, 1400);
+      return;
+    }
     UI.showResult(G.result, G.resultInfo);
     G.emit('result', G.result);
   }
