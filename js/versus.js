@@ -79,6 +79,8 @@
     say('Joining…');
     peer = new root.Peer();
     peer.on('open', () => link(peer.connect(PRE + code, { reliable: true })));
+    const p = peer; // a full room or blocked network never answers: don't leave them on "Joining…" forever
+    setTimeout(() => { if (peer === p && phase === 'wait') { reset(); say("Couldn't join. The room may be full, closed, or blocked by this network."); } }, 15000);
     peer.on('error', onError);
   }
   function link(c) {
@@ -86,7 +88,7 @@
     conn = c;
     c.on('open', () => {
       lastSeen = Date.now();
-      send({ t: 'hi', name: me.name });
+      send({ t: 'hi', name: Save.data.name }); // blank name shows as 'Friend' on their side, not a second 'You'
       lobby();
       if (guest) peer.call(conn.peer, myStream()).on('stream', showFriend);
       setTimeout(() => { if (conn && !$('vsCam').srcObject) camTag("Live view can't connect on this network"); }, 12000);

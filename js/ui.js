@@ -27,7 +27,7 @@
     const d = root.Save.data;
     $('bestScore').textContent = fmt(d.bestScore);
     $('bestSkips').textContent = d.bestSkips;
-    const r = root.rockById(d.selected);
+    const r = root.rockById((root.Versus && root.Versus.inMatch()) ? 'pebble' : d.selected); // matches always throw the Pebble
     $('pouchImg').src = 'assets/rocks/' + r.img + '.png';
     $('resRockImg').src = 'assets/rocks/' + r.img + '.png';
     $('pouchDot').classList.toggle('on', d.unlocked.some((id) => !d.seen.includes(id)));
@@ -240,7 +240,12 @@
       root.FX.burst(card.right - 40, card.top + card.height * 0.6, 30, { colors: ['#f6a7c0', '#ffd34d', '#fff6dc'] });
     }
     tally.done = true;
-    if (info.unlocked.length) { await wait(700); await showUnlock(info.unlocked); }
+    if (info.unlocked.length) {
+      await wait(700);
+      // mid-match: never pop the reveal (Space would equip it); just say it's waiting in the pouch
+      if ((root.Versus && root.Versus.inMatch())) toast(`New stone found: ${info.unlocked.map((r) => r.name).join(', ')}! It's in your pouch for later.`, 3200);
+      else await showUnlock(info.unlocked);
+    }
     emit('result:done');
   }
   function fastForward() { if (tally && !tally.done) tally.ff = true; }
@@ -303,6 +308,7 @@
     emit('rock:select', id);
   }
   function openRocks() {
+    if ((root.Versus && root.Versus.inMatch())) return toast('Friend matches use the Pebble for both players.');
     viewing = root.Save.data.selected;
     renderRocks();
     show('rocksMenu');

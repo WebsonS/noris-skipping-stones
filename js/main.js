@@ -237,12 +237,13 @@
   $('btnTutYes').addEventListener('click', () => { UI.hide('choice'); SFX().pop(); enterAim(); root.Tutorial.start(); });
   $('btnTutNo').addEventListener('click', () => { UI.hide('choice'); Save.set('tutorialDone', true); SFX().click(); enterAim(); UI.toast('Have fun! You can replay the tutorial in Settings.'); });
   $('btnAgain').addEventListener('click', () => { if (G.state !== 'result' || (G.tut.active && !G.tut.allowAgain)) return; SFX().click(); UI.hideResult(); enterAim(); G.emit('again'); });
-  $('btnRocks').addEventListener('click', () => { if (G.tut.lockRocks || G.state === 'flight') return; if (root.Versus && root.Versus.inMatch()) return UI.toast('Friend matches use the Pebble for both players.'); UI.openRocks(); });
-  $('btnResRocks').addEventListener('click', () => { if (G.tut.lockRocks) return; if (root.Versus && root.Versus.inMatch()) return UI.toast('Friend matches use the Pebble for both players.'); UI.openRocks(); });
+  $('btnRocks').addEventListener('click', () => { if (G.tut.lockRocks || G.state === 'flight') return; UI.openRocks(); });
+  $('btnResRocks').addEventListener('click', () => { if (G.tut.lockRocks) return; UI.openRocks(); });
   $('btnTitleRocks').addEventListener('click', () => { root.Sound.init(); applyAudioSettings(); UI.openRocks(); });
   $('btnSettings').addEventListener('click', () => { if (G.state === 'flight') return; UI.openSettings(); });
   $('btnTitleSettings').addEventListener('click', () => { root.Sound.init(); applyAudioSettings(); UI.openSettings(); });
   $('btnReplayTut').addEventListener('click', () => {
+    if (root.Versus && root.Versus.inMatch()) return UI.toast('Finish or leave the match to replay the tutorial.');
     UI.hide('settings');
     if (G.state === 'title') { UI.hide('title'); root.Sound.init(); applyAudioSettings(); }
     if (G.state === 'result') UI.hideResult();
