@@ -130,6 +130,7 @@
     if (phase !== 'lobby' || !me.ready || !them.ready) return;
     phase = 'count';
     me.score = me.n = them.score = them.n = 0; me.throws = []; them.throws = [];
+    $('vsCamBox').classList.remove('big'); // last match may have left it enlarged
     UI.hide('versus');
     toLake();
     update();
@@ -202,9 +203,9 @@
     const win = left || me.score > them.score, tie = !left && me.score === them.score;
     $('vsTitle').textContent = win ? 'You win! 🏆' : tie ? "It's a tie!" : `${them.name} wins!`;
     say(left ? `${them.name} left the match, so you win.` : '');
-    board(win && !tie);
     $('btnVsGo').hidden = left; $('btnVsGo').firstChild.textContent = 'Rematch';
     show('done');
+    if (left) $('vsBoard').hidden = true; else board(win && !tie); // a forfeit's half-played totals would contradict 'You win'
     UI.show('versus');
     $('vsChip').hidden = true;
     if (win) root.Sound.sfx.meow('happy'); else if (!tie) root.Sound.sfx.meow('sad');
