@@ -6,6 +6,14 @@
   const $ = (id) => document.getElementById(id);
   const N = 5, PRE = 'nori-skip-', TURN = 20;
   let peer = null, conn = null, guest = false, stream = null;
+  // Relay (TURN) so phones on mobile data / different networks can still connect; PeerJS's built-in free relay is dead.
+  // These are public by necessity (every browser needs them). If someone burns the quota, rotate the credential in Metered.
+  const RELAY = { username: '822a4566ca21a350e0724293', credential: 'F0/v6+1zL9qch+q+' };
+  const OPTS = { config: { iceServers: [
+    { urls: 'stun:stun.relay.metered.ca:80' },
+    { urls: ['turn:global.relay.metered.ca:80', 'turn:global.relay.metered.ca:80?transport=tcp',
+      'turn:global.relay.metered.ca:443', 'turns:global.relay.metered.ca:443?transport=tcp'], ...RELAY },
+  ] } };
   let phase = 'off'; // off | wait | lobby | count | play | done
   let me = {}, them = {}, deadline = 0, lastSeen = 0, lastPing = 0;
 
@@ -63,7 +71,7 @@
     $('vsCodeBig').textContent = '····';
     show('wait');
     say('Opening the room…');
-    peer = new root.Peer(PRE + code);
+    peer = new root.Peer(PRE + code, OPTS);
     peer.on('open', () => { $('vsCodeBig').textContent = code; say('Send the code or link to your friend.\nWaiting for them to join…'); });
     peer.on('connection', link);
     peer.on('call', (c) => { c.answer(myStream()); c.on('stream', showFriend); });
@@ -77,7 +85,7 @@
     guest = true; phase = 'wait';
     show('join');
     say('Joining…');
-    peer = new root.Peer();
+    peer = new root.Peer(OPTS);
     peer.on('open', () => link(peer.connect(PRE + code, { reliable: true })));
     const p = peer; // a full room or blocked network never answers: don't leave them on "Joining…" forever
     setTimeout(() => { if (peer === p && phase === 'wait') { reset(); say("Couldn't join. The room may be full, closed, or blocked by this network."); } }, 15000);
